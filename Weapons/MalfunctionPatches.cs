@@ -71,7 +71,7 @@ namespace RealismMod
                 }
                 overheatMalfChance *= (float)__instance.Item.Buff.MalfunctionProtections;
 
-                if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
+                if (weaponDurability >= Plugin.DuraMalfThreshold)
                 {
 
                     magMalfChance *= 0.25f;

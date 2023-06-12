@@ -53,12 +53,12 @@ namespace RealismMod
 
                     aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
                     WeaponProperties.SightlessAimSpeed = aimSpeed;
+                    WeaponProperties.ErgoStanceSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.55f, 1.4f);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -106,11 +106,14 @@ namespace RealismMod
                     float stockMulti = firearmController.Item.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.8f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
-                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f) * Plugin.GlobalAimSpeedModifier.Value;
+                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f) * Plugin.GlobalAimSpeedModifier;
                     
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
-                   
+
+                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
+                    WeaponProperties.AnimationWeightFactor = 1f - (totalWeight / 12f);
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_20========");
@@ -146,14 +149,14 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.86f);
                     }
 
-                    breathIntensity *= Plugin.SwayIntensity.Value;
-                    handsIntensity *= Plugin.SwayIntensity.Value;
+                    breathIntensity *= Plugin.SwayIntensity;
+                    handsIntensity *= Plugin.SwayIntensity;
 
                     __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                     PlayerProperties.TotalHandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
 
-                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
+                    __instance.Shootingg.Intensity = Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value;
                     __instance.Overweight = 0;
                 }
             }
@@ -194,7 +197,7 @@ namespace RealismMod
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float displacementModifier = noShoulderContact ? 0.6f : 0.4f;//lower = less drag
-                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.6f : Plugin.SwayIntensity.Value * 0.4f;
+                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity * 0.6f : Plugin.SwayIntensity * 0.4f;
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);

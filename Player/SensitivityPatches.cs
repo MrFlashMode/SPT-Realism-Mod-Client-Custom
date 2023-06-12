@@ -23,15 +23,8 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                if (!Plugin.isUniformAimPresent || !Plugin.isBridgePresent)
-                {
-                    Plugin.StartingAimSens = ____aimingSens;
-                    Plugin.CurrentAimSens = ____aimingSens;
-                }
-                else
-                {
-                    Plugin.CurrentAimSens = Plugin.StartingAimSens;
-                }
+                Plugin.StartingAimSens = ____aimingSens;
+                Plugin.CurrentAimSens = ____aimingSens;
             }
         }
     }

@@ -11,7 +11,6 @@ using static Val;
 using HarmonyLib;
 using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
-using notGreg.UniformAim;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
 
@@ -169,20 +168,20 @@ namespace RealismMod
 
             if (Plugin.IsFiring == true)
             {
-                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
+                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate, VignetteDarknessLimit, ref Volume, Plugin.DeafRate, VolumeLimit, ref Distortion, Plugin.DistRate, DistortionLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
+                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset, VignetteDarknessLimit, ref Volume, Plugin.DeafReset, VolumeLimit, ref Distortion, Plugin.DistReset, DistortionLimit, enviroMulti);
             }
 
             if (Plugin.IsBotFiring == true)
             {
-                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
+                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate, VolumeLimit, ref BotDistortion, Plugin.DistRate, DistortionLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
+                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset, VolumeLimit, ref BotDistortion, Plugin.DistReset, DistortionLimit, enviroMulti);
             }
 
             if (Plugin.GrenadeExploded == true)
@@ -199,7 +198,7 @@ namespace RealismMod
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 60.0f);
 
-            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / 2.5f));
+            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain) / 2.35f));
 
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
@@ -222,8 +221,8 @@ namespace RealismMod
                 }
                 else
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain * Plugin.GainCutoff);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff)));
                 }
                 valuesAreReset = false;
             }
@@ -231,9 +230,7 @@ namespace RealismMod
             {
                 if (Plugin.HasHeadSet)
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
-                    //WARNING: EAR RAPE
-
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
 
                 }
@@ -284,7 +281,7 @@ namespace RealismMod
             Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
             Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
             Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
-            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain.Value : 10f;
+            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain : 10f;
 
             __instance.Master.SetFloat("Compressor", Plugin.Compressor);
             __instance.Master.SetFloat("OcclusionVolume", Plugin.MainVolume);

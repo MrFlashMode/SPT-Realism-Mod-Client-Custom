@@ -76,67 +76,67 @@ namespace RealismMod
             switch (id)
             {
                 case ENewItemAttributeId.HorizontalRecoil:
-                    return "HORIZONTAL RECOIL";
+                    return "ГОРИЗОНТАЛЬНАЯ ОТДАЧА";
                 case ENewItemAttributeId.VerticalRecoil:
-                    return "VERTICAL RECOIL";
+                    return "ВЕРТИКАЛЬНАЯ ОТДАЧА";
                 case ENewItemAttributeId.Balance:
-                    return "BALANCE";
+                    return "БАЛАНС";
                 case ENewItemAttributeId.Dispersion:
-                    return "DISPERSION";
+                    return "РАЗБРОС";
                 case ENewItemAttributeId.CameraRecoil:
-                    return "CAMERA RECOIL";
+                    return "ПОДБРОС КАМЕРЫ";
                 case ENewItemAttributeId.MalfunctionChance:
-                    return "MALFUNCTION CHANCE";
+                    return "ШАНС НЕИСПРАВНОСТИ";
                 case ENewItemAttributeId.AutoROF:
-                    return "AUTO FIRE RATE";
+                    return "СКОРОСТРЕЛЬНОСТЬ (АВТОМАТ)";
                 case ENewItemAttributeId.SemiROF:
-                    return "SEMI FIRE RATE";
+                    return "СКОРОСТРЕЛЬНОСТЬ (ПОЛУАВТОМАТ)";
                 case ENewItemAttributeId.RecoilAngle:
-                    return "RECOIL ANGLE";
+                    return "УГОЛ ОТДАЧИ";
                 case ENewItemAttributeId.ReloadSpeed:
-                    return "RELOAD SPEED";
+                    return "СКОРОСТЬ ПЕРЕЗАРЯДКИ";
                 case ENewItemAttributeId.FixSpeed:
-                    return "FIX SPEED";
+                    return "СКОРОСТЬ ИСПРАВЛЕНИЯ НЕИСПРАВНОСТИ";
                 case ENewItemAttributeId.AimSpeed:
-                    return "AIM SPEED";
+                    return "СКОРОСТЬ ПРИЦЕЛИВАНИЯ";
                 case ENewItemAttributeId.ChamberSpeed:
-                    return "CHAMBER SPEED";
+                    return "СКОРОСТЬ ПРОВЕРКИ ПАТРОННИКА";
                 case ENewItemAttributeId.Firerate:
-                    return "FIRE RATE";
+                    return "СКОРОСТРЕЛЬНОСТЬ";
                 case ENewItemAttributeId.Damage:
-                    return "DAMAGE";
+                    return "УРОН";
                 case ENewItemAttributeId.Penetration:
-                    return "PENETRATION";
+                    return "БРОНЕПРОБИВАЕМОСТЬ";
                 case ENewItemAttributeId.ArmorDamage:
-                    return "ARMOR DAMAGE";
+                    return "ПОВРЕЖДЕНИЕ БРОНИ";
                 case ENewItemAttributeId.FragmentationChance:
-                    return "FRAGMENTATION CHANCE";
+                    return "ВЕРОЯТНОСТЬ ФРАГМЕНТАЦИИ";
                 case ENewItemAttributeId.BluntThroughput:
-                    return "BLUNT DAMAGE REDUCTION";
+                    return "СНИЖЕНИЕ ЗАБРОНЕВОГО УРОНА";
                 case ENewItemAttributeId.ShotDispersion:
-                    return "SHOT SPREAD REDUCTION";
+                    return "УМЕНЬШЕНИЕ РАЗЛЁТА ПУЛЬ";
                 case ENewItemAttributeId.CanSpall:
-                    return "CAN SPALL";
+                    return "ЗАЩИТА ОТ ФРАГМЕНТАЦИИ ПУЛИ";
                 case ENewItemAttributeId.SpallReduction:
-                    return "SPALLING REDUCTION";
+                    return "СТЕПЕНЬ ЗАЩИТЫ ОТ ФРАГМЕНТАЦИИ";
                 case ENewItemAttributeId.GearReloadSpeed:
-                    return "RELOAD SPEED";
+                    return "МОДИФИКАТОР СКОРОСТИ ПЕРЕЗАРЯДКИ";
                 case ENewItemAttributeId.CanAds:
-                    return "ALLOWS ADS";
+                    return "ВОЗМОЖНОСТЬ ПРИЦЕЛИВАНИЯ";
                 case ENewItemAttributeId.NoiseReduction:
-                    return "NOISE REDUCTION RATING";
+                    return "УРОВЕНЬ ПОДАВЛЕНИЯ ШУМА";
                 case ENewItemAttributeId.ProjectileCount:
-                    return "PROJECTILES";
+                    return "ФРАГМЕНТЫ";
                 case ENewItemAttributeId.Convergence:
-                    return "FLATNESS";
+                    return "НАСТИЛЬНОСТЬ";
                 case ENewItemAttributeId.HBleedType:
-                    return "HEAVY BLEED HEAL TYPE";
+                    return "СПОСОБ ЛЕЧЕНИЯ КРОВОТЕЧЕНИЙ";
                 case ENewItemAttributeId.LimbHpPerTick:
-                    return "TOURNIQUET HP LOSS PER TICK";
+                    return "ПОТЕРЯ ОЗ ЗА ЕД.ВРЕМЕНИ";
                 case ENewItemAttributeId.HpPerTick:
-                    return "HP CHANGE PER TICK";
+                    return "ИЗМЕНЕНИЕ ОЗ ЗА ЕД.ВРЕМЕНИ";
                 case ENewItemAttributeId.RemoveTrnqt:
-                    return "REMOVES TOURNIQUET EFFECT";
+                    return "УБИРАЕТ ЭФФЕКТ ЖГУТА";
                 default:
                     return id.ToString();
             }

@@ -36,7 +36,7 @@ namespace RealismMod
         {
 
 
-            if (Plugin.EnableAmmoFirerateDisp.Value == true)
+            if (Plugin.EnableAmmoFirerateDisp == true)
             {
                 float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
 
@@ -66,7 +66,7 @@ namespace RealismMod
                 ammoAttributes.Add(pelletAtt);
             }
 
-            /*            if (Plugin.enableAmmoDamageDisp.Value == true)
+                        if (Plugin.enableAmmoDamageDisp == true)
                         {
                             float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
                             ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
@@ -78,7 +78,7 @@ namespace RealismMod
 
                         }
 
-                        if (Plugin.enableAmmoFragDisp.Value == true)
+                        if (Plugin.enableAmmoFragDisp == true)
                         {
                             float fragChance = ammoTemplate.FragmentationChance * 100;
                             if (fragChance > 0)
@@ -92,7 +92,7 @@ namespace RealismMod
                             }
                         }
 
-                        if (Plugin.enableAmmoPenDisp.Value == true)
+                        if (Plugin.enableAmmoPenDisp == true)
                         {
                             ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
                             penAtt.Name = ENewItemAttributeId.Penetration.GetName();
@@ -102,7 +102,7 @@ namespace RealismMod
                             ammoAttributes.Add(penAtt);
                         }
 
-                        if (Plugin.enableAmmoArmorDamageDisp.Value == true)
+                        if (Plugin.enableAmmoArmorDamageDisp == true)
                         {
                             ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
                             armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
@@ -110,7 +110,7 @@ namespace RealismMod
                             armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
                             armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                             ammoAttributes.Add(armorDamAtt);
-                        }*/
+                        }
         }
     }
 
@@ -135,7 +135,7 @@ namespace RealismMod
                 ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
                 dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
                 dbAttClass.Base = () => dB;
-                dbAttClass.StringValue = () => dB.ToString() + " NRR";
+                dbAttClass.StringValue = () => dB.ToString() + " Дб";
                 dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 dbAtt.Add(dbAttClass);
             }
@@ -259,16 +259,16 @@ namespace RealismMod
                     __result = duraBurn.ToString("P1");
                     break;
                 case <= 6f:
-                    __result = "SIGNIFICANT INCREASE";
+                    __result = "ЗНАЧИТЕЛЬНОЕ ПОВЫШЕНИЕ";
                     break;
                 case <= 10f:
-                    __result = "LARGE INCREASE";
+                    __result = "БОЛЬШОЕ ПОВЫШЕНИЕ";
                     break;
                 case <= 15f:
-                    __result = "VERY LARGE INCREASE";
+                    __result = "ОЧЕНЬ БОЛЬШОЕ ПОВЫШЕНИЕ";
                     break;
                 case <= 100f:
-                    __result = "HUGE INCREASE";
+                    __result = "ОГРОМНОЕ ПОВЫШЕНИЕ";
                     break;
             }
             return false;
@@ -370,7 +370,7 @@ namespace RealismMod
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
             float conv = AttachmentProperties.ModConvergence(__instance);
 
-            if (Plugin.EnableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
+            if (Plugin.EnableMalfPatch == true && Plugin.ModConfig.malf_changes == true)
             {
                 ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
                 malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
@@ -499,17 +499,17 @@ namespace RealismMod
                 case < 0:
                     return $"{malfChance}%";
                 case 0:
-                    return "No Change";
+                    return "Без изменений";
                 case <= 50:
                     return $"{malfChance}%";
                 case <= 100:
-                    return "Small Increase";
+                    return "Небольшое повышение";
                 case <= 500:
-                    return "Significant Increase";
+                    return "Значительное повышение";
                 case <= 1000:
-                    return "Large Increase";
+                    return "Большое повышение";
                 case <= 5000:
-                    return "Critical Increase";
+                    return "Критическое повышение";
                 default:
                     return "";
             }
@@ -555,7 +555,7 @@ namespace RealismMod
         private static void PatchPostfix(Weapon __instance, string id, WeaponTemplate template)
         {
 
-            if (Plugin.ShowBalance.Value == true)
+            if (Plugin.ShowBalance == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
                 GClass2408 balanceAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.Balance);
@@ -570,7 +570,7 @@ namespace RealismMod
 
             }
 
-            if (Plugin.ShowDispersion.Value == true)
+            if (Plugin.ShowDispersion == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
                 GClass2408 dispersionAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.Dispersion);
@@ -584,7 +584,7 @@ namespace RealismMod
                 dispersionAttList.Add(dispersionAtt);
             }
 
-            if (Plugin.ShowCamRecoil.Value == true)
+            if (Plugin.ShowCamRecoil == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 GClass2408 camRecoilAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
@@ -598,7 +598,7 @@ namespace RealismMod
                 camRecoilAttList.Add(camRecoilAtt);
             }
 
-            if (Plugin.ShowRecoilAngle.Value == true)
+            if (Plugin.ShowRecoilAngle == true)
             {
                 List<ItemAttributeClass> recoilAngleAttList = __instance.Attributes;
                 ItemAttributeClass recoilAngleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
@@ -609,7 +609,7 @@ namespace RealismMod
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
 
-            if (Plugin.ShowSemiROF.Value == true)
+            if (Plugin.ShowSemiROF == true)
             {
                 List<ItemAttributeClass> semiROFAttList = __instance.Attributes;
                 ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);
@@ -762,7 +762,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref string __result)
         {
-            __result = DisplayWeaponProperties.AutoFireRate.ToString() + " " + "RPM".Localized(null);
+            __result = DisplayWeaponProperties.AutoFireRate.ToString() + " " + "выс/мин".Localized(null);
             return false;
         }
     }
@@ -778,7 +778,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-            if (Plugin.EnableStatsDelta.Value == true)
+            if (Plugin.EnableStatsDelta == true)
             {
                 StatDeltaDisplay.DisplayDelta(__instance, Logger);
             }

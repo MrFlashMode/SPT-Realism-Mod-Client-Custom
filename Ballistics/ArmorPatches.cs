@@ -145,15 +145,15 @@ namespace RealismMod
                 }
                 if (GearProperties.HasNeckArmor(___armorComponent_0.Item) == true)
                 {
-                    parts.Add("NECK");
+                    parts.Add("ШЕЯ");
                 }
                 if (GearProperties.HasSideArmor(___armorComponent_0.Item) == true)
                 {
-                    parts.Add("SIDES");
+                    parts.Add("БОКА");
                 }
                 if (GearProperties.HasStomachArmor(___armorComponent_0.Item) == true)
                 {
-                    parts.Add("STOMACH");
+                    parts.Add("ЖИВОТ");
                 }
 
                 __result =  Enumerable.Cast<object>(parts).CastToStringValue("\n", true);
@@ -232,10 +232,12 @@ namespace RealismMod
 
                 if (showADS == true)
                 {
+                    bool canAds = GearProperties.AllowsADS(__instance.Item);
+
                     List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
                     ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
                     canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
-                    canADSAttAttClass.StringValue = () => GearProperties.AllowsADS(__instance.Item).ToString();
+                    canADSAttAttClass.StringValue = () => $"{getCanAds(canAds)}";
                     canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     canADSAtt.Add(canADSAttAttClass);
                 }
@@ -254,7 +256,7 @@ namespace RealismMod
                     List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
                     ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
                     canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
-                    canSpallAttClass.StringValue = () => canSpall.ToString();
+                    canSpallAttClass.StringValue = () => $"{getCanSpall(canSpall)}";
                     canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     canSpallAtt.Add(canSpallAttClass);
 
@@ -269,6 +271,31 @@ namespace RealismMod
                     }
                 }
             }
+
+            public static string getCanAds(bool canAds)
+            {
+                if (canAds == true)
+                {
+                    return "Доступно";
+                }
+                else
+                {
+                    return "Недоступно";
+                }
+            }
+
+            public static string getCanSpall(bool canSpall)
+            {
+                if (canSpall == true)
+                {
+                    return "Присутствует";
+                }
+                else
+                {
+                    return "Отсутствует";
+                }
+            }
+
         }
     }
 }
