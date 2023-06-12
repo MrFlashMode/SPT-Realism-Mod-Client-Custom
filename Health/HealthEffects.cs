@@ -9,7 +9,6 @@ using System.Linq;
 
 namespace RealismMod
 {
-
     public enum EHealthEffectType 
     {
         Surgery,
@@ -26,111 +25,6 @@ namespace RealismMod
         public Player Player { get; }
         public float Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-    }
-
-    public class TourniquetEffect : IHealthEffect
-    {
-        public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; }
-        public float TimeExisted { get; set; }
-        public float HpPerTick { get; }
-        public Player Player { get; }
-        public float Delay { get; set; }
-        public EHealthEffectType EffectType { get; }
-
-        public TourniquetEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
-        {
-            TimeExisted = 0;
-            HpPerTick = -hpTick;
-            Duration = dur;
-            BodyPart = part;
-            Player = player;
-            Delay = delay;
-            EffectType = EHealthEffectType.Tourniquet; 
-        }
-
-        public void Tick()
-        {
-            if (Delay <= 0f) 
-            {
-                float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
-
-                TimeExisted += 3f;
-
-                if (TimeExisted > 10f && (int)(Time.time % 10) == 0) 
-                {
-                    RealismHealthController.RemoveBaseEFTEffect(Player, BodyPart, "HeavyBleeding");
-                    RealismHealthController.RemoveBaseEFTEffect(Player, BodyPart, "LightBleeding");
-                }
-               
-                if (currentPartHP > 25f)
-                {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
-                    Type healthChangeType = typeof(HealthChange);
-                    MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
-                    HealthChange healthChangeInstance = new HealthChange();
-                    genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
-                }
-            }
-        }
-    }
-
-    public class SurgeryEffect : IHealthEffect
-    {
-        public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; set; }
-        public float TimeExisted { get; set; }
-        public float HpPerTick { get; }
-        public Player Player { get; }
-        public float HpRegened { get; set; }
-        public float Delay { get; set; }
-        private bool hasRemovedTrnqt = false;
-        public EHealthEffectType EffectType { get; }
-
-        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
-        {
-            TimeExisted = 0;
-            HpRegened = 0;
-            HpPerTick = hpTick;
-            Duration = dur;
-            BodyPart = part;
-            Player = player;
-            Delay = delay;
-            EffectType = EHealthEffectType.Surgery;
-        }
-
-        public void Tick()
-        {
-            if (Delay <= 0f)
-            {
-                if (!hasRemovedTrnqt)
-                {
-                    RealismHealthController.RemoveEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    hasRemovedTrnqt = true;
-                }
-
-                float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
-                float maxHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
-                float maxHpRegen = maxHp / 2f;
-
-                if (HpRegened < maxHpRegen)
-                {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
-                    Type healthChangeType = typeof(HealthChange);
-                    MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
-                    HealthChange healthChangeInstance = new HealthChange();
-                    genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
-                    HpRegened += HpPerTick;
-                }
-                if (HpRegened >= maxHpRegen || currentHp == maxHp)
-                {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + "Has Expired", EFT.Communications.ENotificationDurationType.Long);
-                    Duration = 0;
-                    return;
-                }
-
-            }
-        }
     }
 
     public class HealthRegenEffect : IHealthEffect
@@ -184,7 +78,6 @@ namespace RealismMod
             }
         }
     }
-
 
     public class HealthChange : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
     {

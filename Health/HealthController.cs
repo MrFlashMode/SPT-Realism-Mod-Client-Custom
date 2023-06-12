@@ -22,23 +22,12 @@ using Systems.Effects;
 
 namespace RealismMod
 {
-
     public static class MedProperties
     {
         public static string MedType(Item med)
         {
             return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
 
-        }
-
-        public static string HBleedHealType(Item med)
-        {
-            return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
-        }
-
-        public static float HpPerTick(Item med)
-        {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
@@ -77,21 +66,6 @@ namespace RealismMod
                     TotalLightBleedDamage += damage;
                     return;
             }
-
- /*           if (!DamageRecord.ContainsKey(damageType))
-            {
-                DamageRecord[damageType] = new Dictionary<EBodyPart, float>();
-            }
-
-            Dictionary<EBodyPart, float> innerDict = DamageRecord[damageType];
-            if (!innerDict.ContainsKey(bodyPart))
-            {
-                innerDict[bodyPart] = damage;
-            }
-            else
-            {
-                innerDict[bodyPart] += damage;
-            }*/
         }
 
         public static void ResetTracker()
@@ -104,16 +78,11 @@ namespace RealismMod
         }
     }
 
-
     public static class RealismHealthController
     {
         public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
        
         private static List<IHealthEffect> activeHealthEffects = new List<IHealthEffect>();
-
-        private static float doubleClickTime = 0.2f;
-        private static float timeSinceLastClicked = 0f;
-        private static bool clickTriggered = false;
 
         public static void HealthController(ManualLogSource logger)
         {
@@ -124,54 +93,12 @@ namespace RealismMod
                     ControllerTick(logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
                     Plugin.healthControllerTick = 0f;
                 }
-
-                if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
-                {
-                    GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    if (gameWorld?.AllPlayers.Count > 0)
-                    {
-                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
-                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
-                    }
-                }
-
-                if (Input.GetKeyDown(Plugin.DropGearKeybind.Value.MainKey))
-                {
-                    if (clickTriggered)
-                    {
-                        GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                        if (gameWorld?.AllPlayers.Count > 0)
-                        {
-                            DropBlockingGear(gameWorld.AllPlayers[0]);
-                        }
-                        clickTriggered = false;
-                    }
-                    else
-                    {
-                        clickTriggered = true;
-                    }
-                    timeSinceLastClicked = 0f;
-                }
-                timeSinceLastClicked += Time.deltaTime;
-                if (timeSinceLastClicked > doubleClickTime)
-                {
-                    clickTriggered = false;
-                }
-
             }
             if (Utils.IsInHideout() || !Utils.IsReady)
             {
                 RemoveAllEffects();
                 DamageTracker.ResetTracker();
-
             }
-        }
-
-        public static void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
-        {
-            MethodInfo effectMethod = GetAddBaseEFTEffectMethod();
-
-            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
         public static MethodInfo GetAddBaseEFTEffectMethod()
@@ -278,7 +205,7 @@ namespace RealismMod
             activeHealthEffects.Clear();
         }
 
-        public static void ResetBleedDamageRecord(Player player) 
+        public static void ResetBleedDamageRecord(Player player)
         {
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
@@ -421,69 +348,6 @@ namespace RealismMod
             }
         }
 
-        public static void DropBlockingGear(Player player) 
-        {
-            Player.ItemHandsController itemHandsController = player.HandsController as Player.ItemHandsController;
-            if (itemHandsController != null && itemHandsController.CurrentCompassState)
-            {
-                itemHandsController.SetCompassState(false);
-                return;
-            }
-
-            if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled)
-            {
-                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-
-                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
-
-                List<Item> gear = new List<Item>();
-                List<EquipmentSlot> slots = new List<EquipmentSlot>();
-
-                if (BodyPartHasBleed(player, EBodyPart.Head))
-                {
-                    slots.Add(EquipmentSlot.Headwear);
-                    slots.Add(EquipmentSlot.Earpiece);
-                    slots.Add(EquipmentSlot.FaceCover);
-                }
-                if (BodyPartHasBleed(player, EBodyPart.Stomach) || BodyPartHasBleed(player, EBodyPart.Chest))
-                {
-                    slots.Add(EquipmentSlot.TacticalVest);
-                    slots.Add(EquipmentSlot.Backpack);
-                    slots.Add(EquipmentSlot.ArmorVest);
-                }
-;
-                if (slots.Count < 1)
-                {
-                    return;
-                }
-
-                foreach (EquipmentSlot slot in slots)
-                {
-                    Item item = equipment.GetSlot(slot).ContainedItem;
-                    if (item != null)
-                    {
-                        gear.Add(item);
-                    }
-                }
-
-                if (gear.Count < 1)
-                {
-                    return;
-                }
-
-                NotificationManagerClass.DisplayMessageNotification("Dropping Gear");
-
-                foreach (Item item in gear)
-                {
-                    if (inventoryController.CanThrow(item))
-                    {
-                        inventoryController.TryThrowItem(item, null, false);
-
-                    }
-                }
-            }
-        }
-
         public static bool MouthIsBlocked(Item head, Item face, EquipmentClass equipment)
         {
             bool faceBlocksMouth = false;
@@ -534,7 +398,7 @@ namespace RealismMod
             }
             return false;
         }
-
+        
         public static IEnumerable<IEffect> GetInjuriesOnBodyPart(Player player, EBodyPart part, ref bool hasHeavyBleed, ref bool hasLightBleed, ref bool hasFracture)
         {
             IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
@@ -552,7 +416,7 @@ namespace RealismMod
 
             return effects;
         }
-
+        
         public static void GetBodyPartType(EBodyPart part, ref bool isNotLimb, ref bool isHead, ref bool isBody) 
         {
             isHead = part == EBodyPart.Head;
@@ -576,7 +440,7 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                NotificationManagerClass.DisplayWarningNotification("Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask.", EFT.Communications.ENotificationDurationType.Long);
+                NotificationManagerClass.DisplayWarningNotification("Не могу употребить провизию. Мешает Забрало/ПНВ/Маска.", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -593,194 +457,30 @@ namespace RealismMod
             }
         }
 
-        public static void TrnqtRestoreHPArossBody(Player player, float hpToRestore, float delay, EBodyPart bodyPart, EDamageType damageType, float vitalitySkill)
-        {
-            hpToRestore = Mathf.RoundToInt((hpToRestore) / (BodyParts.Length - 1));
-            float tickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
-
-            foreach (EBodyPart part in BodyParts)
-            {
-                if (part != bodyPart)
-                {
-                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
-                    AddCustomEffect(regenEffect, false);
-                }
-            }
-        }
-
-        private static async Task handleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill, float regenTickRate)
-        {
-            float delay = meds.HealthEffectsComponent.UseTime;
-            await Task.Delay(TimeSpan.FromSeconds(delay));
-
-            NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-            
-            float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(35f * (1f + vitalitySkill));
-            float hpToRestore = Mathf.Min(DamageTracker.TotalHeavyBleedDamage, maxHpToRestore);
-
-            if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
-            {
-                NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
-                AddCustomEffect(trnqt, false);
-
-                if (DamageTracker.TotalHeavyBleedDamage > 0f)
-                {
-                    TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.HeavyBleeding, vitalitySkill);
-                }
-            }
-            else if (DamageTracker.TotalHeavyBleedDamage > 0f)
-            {
-                RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.HeavyBleeding, regenTickRate);
-            }
-            DamageTracker.TotalHeavyBleedDamage = Mathf.Max(DamageTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
-        }
-
-        private static async Task handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
-        {
-            float delay = meds.HealthEffectsComponent.UseTime;
-            await Task.Delay(TimeSpan.FromSeconds(delay));
-
-            NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
-            float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(35f * (1f + vitalitySkill));
-            float hpToRestore = Mathf.Min(DamageTracker.TotalLightBleedDamage, maxHpToRestore);
-
-            if (medType == "trnqt" && !isNotLimb)
-            {
-                NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
-                AddCustomEffect(trnqt, false);
-                
-                if (DamageTracker.TotalLightBleedDamage > 0f)
-                {
-                    TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.LightBleeding, vitalitySkill);
-                }
-            }
-            else if (DamageTracker.TotalLightBleedDamage > 0f)
-            {
-                RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.LightBleeding, regenTickRate);
-            }
-            DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - hpToRestore, 0f);
-        }
-
-        private static async Task handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float vitalitySkill)
-        {
-            float delay = meds.HealthEffectsComponent.UseTime;
-            await Task.Delay(TimeSpan.FromSeconds(delay));
-
-            NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + bodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
-            float surgTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f + vitalitySkill), 2);
-
-            if (RealismMod.RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), bodyPart))
-            {
-                NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + bodyPart, EFT.Communications.ENotificationDurationType.Long);
-            }
-
-            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, 0f);
-            AddCustomEffect(surg, false);
-        }
-
-
-
-        public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
-        {
-            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc;
-            float regenTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
-
-            bool hasHeavyBleed = false;
-            bool hasLightBleed = false;
-            bool hasFracture = false;
-
-            IEnumerable<IEffect> effects = GetInjuriesOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
-            bool isHead = false;
-            bool isBody = false;
-            bool isNotLimb = false;
-
-            GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
-
-            if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
-            {
-                handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill, regenTickRate);
-            }
-
-            if (medType == "surg")
-            {
-                handleSurgery(medType, meds, bodyPart, player, vitalitySkill);
-            }
-
-            if (canHealLBleed && hasLightBleed && !hasHeavyBleed && (medType == "trnqt" && !isNotLimb || medType != "trnqt"))
-            {
-                handleLightBleedHeal(medType, meds, bodyPart, player, isNotLimb, vitalitySkill, regenTickRate);
-            }
-
-            if (canHealFract && hasFracture && (medType == "splint" || (medType == "medkit" && !hasHeavyBleed && !hasLightBleed)))
-            {
-                NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                
-                float trnqtTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
-                HealthRegenEffect regenEffect = new HealthRegenEffect(0.85f * (1f + vitalitySkill), null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
-                AddCustomEffect(regenEffect, false);
-            }
-        }
-
-
-        public static void CanUseMedItem(ManualLogSource Logger, Player player, EBodyPart bodyPart, Item item, ref bool canUse)
+        public static void CanUseMedItem(ManualLogSource Logger, Player player, /*EBodyPart bodyPart,*/ Item item, ref bool canUse)
         {
             if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item) == "drug")
             {
                 return;
             }
 
-            MedsClass med = item as MedsClass;
-
             EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
 
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
-            Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
-            Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
             Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-            Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
-            Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-            Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
             bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
-            bool hasHeadGear = head != null || ears != null || face != null;
-            bool hasBodyGear = vest != null || tacrig != null || bag != null;
-
-            bool isHead = false;
-            bool isBody = false;
-            bool isNotLimb = false;
-
             string medType = MedProperties.MedType(item);
-
-            GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
             bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
-            float medHPRes = med.MedKitComponent.HpResource;
        
             if (Plugin.GearBlocksEat.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
-                NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
-                return;
-            }
-
-            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
-            {
-                NotificationManagerClass.DisplayWarningNotification("Part " + bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
-
+                NotificationManagerClass.DisplayWarningNotification("Не могу принять таблетки, мешает Забрало/ПНВ/Маска.", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -790,33 +490,6 @@ namespace RealismMod
                 return;
             }
 
-            bool hasHeavyBleed = false;
-            bool hasLightBleed = false;
-            bool hasFracture = false;
-
-            IEnumerable<IEffect> effects = GetInjuriesOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
-            if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
-            {
-                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
-                return;
-            }
-
-            if (medType == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
-            {
-                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
-                return;
-            }
-
-            if (medType == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
-            {
-                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
-                return;
-            }
-            
             return;
         }
 
@@ -848,12 +521,11 @@ namespace RealismMod
 
                     if (hasHeavyBleed && hasLightBleed && effectType == lightBleedType)
                     {
-                         effect.ForceResidue();
+                        effect.ForceResidue();
                     }
                 }
             }
         }
-
 
         private static float lastCurrentTotalHp = 0f;
         private static float lastCurrentEnergy = 0f;
@@ -861,13 +533,6 @@ namespace RealismMod
 
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
-
-/*            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
-            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);*/
-
-/*            bool hasTremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
-            float tremorFactor = hasTremor ? 0.95f : 1f;*/
-
             float aimMoveSpeedBase = 0.42f;
             float ergoDeltaInjuryMulti = 1f;
             float adsInjuryMulti = 1f;
@@ -1038,32 +703,5 @@ namespace RealismMod
                 }
             }
         }
-
-        //reduntant
-        /*        public static void PassiveHealthRegen(Player player)
-                {
-                    foreach (var damageTypeEntry in DamageTracker.DamageRecord)
-                    {
-                        EDamageType damageType = damageTypeEntry.Key;
-                        Dictionary<EBodyPart, float> bodyPartDictionary = damageTypeEntry.Value;
-
-                        foreach (var bodyPartEntry in bodyPartDictionary)
-                        {
-                            EBodyPart bodyPart = bodyPartEntry.Key;
-                            float hpToRestore = bodyPartEntry.Value;
-
-                            if (hpToRestore > 0)
-                            {
-                                //need to run this method per tick
-                                //I need to remove existing regen on same part and of same type
-                                //need to calculate how much HP would have been healed in that tick
-                                //and then subtract it from the recorded amount of damage
-                                HealthRegenEffect regenEffect = new HealthRegenEffect(0.25f, null, bodyPart, player, 15f, hpToRestore, damageType);
-                                RealismHealthController.AddCustomEffect(regenEffect, true);
-                                bodyPartDictionary[bodyPart] -= hpToRestore;
-                            }
-                        }
-                    }
-                }*/
     }
 }

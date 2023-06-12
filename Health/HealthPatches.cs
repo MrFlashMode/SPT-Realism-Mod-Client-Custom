@@ -27,88 +27,6 @@ using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
-
-    public class MedkitConstructorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface243) });
-        }
-
-        private static string getHBTypeString(string type) 
-        {
-            switch (type) 
-            {
-                case "trnqt":
-                    return "TOURNIQUET";
-                case "surg": 
-                    return "SURGICAL";
-                case "combo":
-                    return "TOURNIQUET + CHEST SEAL";
-                case "clot":
-                    return "CLOTTING AGENT";
-                default:
-                    return "NONE";
-            }
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(MedKitComponent __instance, Item item)
-        {
-            string medType = MedProperties.MedType(item);
-
-            if (medType == "trnqt" || medType == "medkit" || medType == "surg")
-            {
-                string hBleedType = MedProperties.HBleedHealType(item);
-                float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
-
-                if (hBleedType != "none") 
-                {
-                    List<ItemAttributeClass> hbAtt = item.Attributes;
-                    ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
-                    hbAttClass.Name = ENewItemAttributeId.HBleedType.GetName();
-                    hbAttClass.StringValue = () => getHBTypeString(hBleedType);
-                    hbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    hbAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                    hbAttClass.LessIsGood = false;
-                    hbAtt.Add(hbAttClass);
-
-                    if (medType == "surg")
-                    {
-                        List<ItemAttributeClass> hpTickAtt = item.Attributes;
-                        ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HpPerTick);
-                        hpAttClass.Name = ENewItemAttributeId.HpPerTick.GetName();
-                        hpAttClass.Base = () => hpPerTick;
-                        hpAttClass.StringValue = () => hpPerTick.ToString();
-                        hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                        hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                        hpAttClass.LessIsGood = false;
-                        hpTickAtt.Add(hpAttClass);
-
-                        List<ItemAttributeClass> trqntAtt = item.Attributes;
-                        ItemAttributeClass trnqtClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.RemoveTrnqt);
-                        trnqtClass.Name = ENewItemAttributeId.RemoveTrnqt.GetName();
-                        trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                        trqntAtt.Add(trnqtClass);
-                    }
-                    else if(hpPerTick > 0)
-                    {
-                        List<ItemAttributeClass> hpTickAtt = item.Attributes;
-                        ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);
-                        hpAttClass.Name = ENewItemAttributeId.LimbHpPerTick.GetName();
-                        hpAttClass.Base = () => hpPerTick;
-                        hpAttClass.StringValue = () => hpPerTick.ToString();
-                        hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                        hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                        hpAttClass.LessIsGood = false;
-                        hpTickAtt.Add(hpAttClass);
-                    }
-                }
-            }
-        }
-    }
-
-
     //in-raid healing
     public class ApplyItemPatch : ModulePatch
     {
@@ -132,7 +50,7 @@ namespace RealismMod
                         Logger.LogWarning("ApplyItem Med");
                     }
 
-                    RealismHealthController.CanUseMedItem(Logger, __instance.Player, bodyPart, item, ref canUse);
+                    RealismHealthController.CanUseMedItem(Logger, __instance.Player, /*bodyPart,*/ item, ref canUse);
                 }
                 if((foodClass = (item as FoodClass)) != null)
                 {
@@ -298,6 +216,22 @@ namespace RealismMod
         }
     }
 
+    public class FlyingBulletPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void Postfix()
+        {
+            Logger.LogWarning("FLYING BULLET !!!! =====> ==> ===>");
+        }
+    }
+
+
+
     public class HCApplyDamagePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -394,54 +328,33 @@ namespace RealismMod
             string medType = MedProperties.MedType(meds);
             if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
-
-                MedsClass med = meds as MedsClass;
-                float medHPRes = med.MedKitComponent.HpResource;
-
-                string hBleedHealType = MedProperties.HBleedHealType(meds);
-
-                bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-                bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-                bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-
                 if (bodyPart == EBodyPart.Common)
                 {
                     EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
 
                     Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
-                    Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
-                    Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
                     Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-                    Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
-                    Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-                    Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
                     bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face, equipment);
-
-                    bool hasBodyGear = vest != null || tacrig != null || bag != null;
-                    bool hasHeadGear = head != null || ears != null || face != null;
 
                     FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
                     NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                    if (Plugin.GearBlocksHeal.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                    if (Plugin.GearBlocksEat.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
                     {
-                        NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                        NotificationManagerClass.DisplayWarningNotification("Не могу принять таблетки, рот заблокирован Забралом/ПНВ/Маской. Снимите Маску/поднимите Забрало или ПНВ.", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
                     else if (medType == "pills")
                     {
                         return true;
                     }
-
-                    Type heavyBleedType;
-                    Type lightBleedType;
-                    Type fractureType;
-                    MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
-                    MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
-                    MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
+                    else if (medType == "vas")
+                    {
+                        return true;
+                    }
 
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
@@ -459,8 +372,9 @@ namespace RealismMod
 
                         float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
                         float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
-
-                        if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
+                        
+                        
+                        if (medType == "surg" && (isBody || isHead || !isNotLimb))
                         {
                             if (currentHp == 0)
                             {
@@ -470,191 +384,14 @@ namespace RealismMod
                             continue;
                         }
 
-                        foreach (IEffect effect in effects)
-                        {
-                            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
-                            {
-                                continue;
-                            }
-
-                            if (canHealHBleed && effect.Type == heavyBleedType)
-                            {
-                                if (!isNotLimb)
-                                {                          
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if ((isBody || isHead) && hBleedHealType == "trnqt")
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-                                if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-
-                                bodyPart = part;
-                                break;
-                            }
-                            if (canHealLBleed && effect.Type == lightBleedType)
-                            {
-                                if (!isNotLimb)
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if ((isBody || isHead) && hBleedHealType == "trnqt")
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-                                if ((isBody || isHead) && hasHeavyBleed)
-                                {
-                                    continue;
-                                }
-              
-                                bodyPart = part;
-                                break;
-                            }
-                            if (canHealFract && effect.Type == fractureType)
-                            {
-                                if (!isNotLimb)
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if (isNotLimb)
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-      
-                                bodyPart = part;
-                                break;
-                            }
-                        }
-
                         if (bodyPart != EBodyPart.Common)
                         {
                             break;
                         }
                     }
-
-                    if (bodyPart == EBodyPart.Common) 
-                    {
-                        if (medType == "vas") 
-                        {
-                            return true;
-                        }
-
-                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
-                        
-                         return false;
-                    }
-                }
-
-                //determine if any effects should be applied based on what is being healed
-                if (bodyPart != EBodyPart.Common)
-                {
-                   RealismHealthController.HandleHealtheffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                 }
             }
-
             return true;
         }
     }
-
-/*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
-    public class EnergyRatePatch : ModulePatch
-    {
-
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public EnergyRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_5");
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
-            {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
-            }
-            return energyDecayRate;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result)
-        {
-            if (Utils.IsReady && !Utils.IsInHideout()) 
-            {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
-                if (Plugin.EnableLogging.Value)
-                {
-                    Logger.LogWarning("modified energy decay = " + __result);
-                    Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
-                }
-                return false;
-            }
-            return true;
- 
-        }
-    }
-
-    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
-    public class HydoRatePatch : ModulePatch
-    {
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public HydoRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_6");
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
-            {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
-            }
-            return energyDecayRate;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result)
-        {
-            if (Utils.IsReady && !Utils.IsInHideout())
-            {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
-                return false;
-            }
-            return true;
-        }
-    }*/
 }
