@@ -3,13 +3,10 @@ using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using static EFT.Player;
 
@@ -477,7 +474,10 @@ namespace RealismMod
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX, Plugin.PistolAdditionalRotationY, Plugin.PistolAdditionalRotationZ));
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX * balanceFactor, Plugin.PistolResetRotationY, Plugin.PistolResetRotationZ);
 
-            __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
+            if (!Plugin.IsBlindFiring)
+            {
+                __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
+            }
 
             if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
             {
@@ -563,7 +563,10 @@ namespace RealismMod
             Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX, Plugin.ShortStockOffsetY, Plugin.ShortStockOffsetZ);
 
             //for setting baseline position
-            __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
+            if (!Plugin.IsBlindFiring)
+            {
+                __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
+            }
 
             if ((Plugin.EnableTacSprint.Value || StanceController.WasHighReady) && (!PlayerProperties.RightArmRuined || !PlayerProperties.LeftArmRuined))
             {
@@ -1269,11 +1272,11 @@ namespace RealismMod
                     Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                     Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
 
-                    Vector3 lowReadyTargetRotation = new Vector3(8.0f, -5.0f, -1.0f);
+                    Vector3 lowReadyTargetRotation = new Vector3(9.0f, -5.0f, -1.0f);
                     Quaternion lowReadyTargetQuaternion = Quaternion.Euler(lowReadyTargetRotation);
                     Vector3 lowReadyTargetPostion = new Vector3(-0.03f, -0.01f, 0.0f);
 
-                    Vector3 highReadyTargetRotation = new Vector3(-10.0f, 3.0f, 3.0f);
+                    Vector3 highReadyTargetRotation = new Vector3(-12.0f, 3.0f, 3.0f);
                     Quaternion highReadyTargetQuaternion = Quaternion.Euler(highReadyTargetRotation);
                     Vector3 highReadyTargetPostion = new Vector3(0.03f, 0.04f, -0.1f);
 
@@ -1452,12 +1455,14 @@ namespace RealismMod
                     Vector3 position = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                     Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);//
 
+                    /*
                     vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
                     quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
                     quaternion_6 = __instance.HandsContainer.WeaponRootAnim.rotation;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
+                    */
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
@@ -1490,7 +1495,7 @@ namespace RealismMod
 
                     if (!Plugin.IsFiring)
                     {
-                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.7f);
+                        __instance.HandsContainer.HandsPosition.Damping = 0.65f;
                     }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)

@@ -1,13 +1,9 @@
 ﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using EFT;
-using EFT.Interactive;
-using EFT.InventoryLogic;
 using HarmonyLib;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using static EFT.Player;
 
 namespace RealismMod
 {

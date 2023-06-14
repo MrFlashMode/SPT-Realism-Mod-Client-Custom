@@ -1,11 +1,8 @@
 ﻿using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
-using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Reflection;
-using UnityEngine;
-using static EFT.Profile;
 
 namespace RealismMod
 {

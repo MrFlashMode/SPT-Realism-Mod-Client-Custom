@@ -1,18 +1,12 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
-using BepInEx.Logging;
-using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
-using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static BaseBallistic;
-using static EFT.Player;
 
 
 namespace RealismMod

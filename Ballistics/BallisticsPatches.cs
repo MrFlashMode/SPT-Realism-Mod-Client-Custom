@@ -8,18 +8,8 @@ using Comfort.Common;
 using System.Linq;
 using HarmonyLib;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using EFT.Ballistics;
-using System.Drawing;
 using BepInEx.Logging;
-using UnityEngine.Rendering.PostProcessing;
-using EFT.Quests;
-using System.IO;
-using static EFT.Interactive.BetterPropagationGroups;
-using HarmonyLib.Tools;
-using System.Collections;
 using EFT.Interactive;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -1301,7 +1291,7 @@ namespace RealismMod
                 return false;
             }
 
-            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee)
+            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee || damageType == EDamageType.Landmine)
             {
                 return true;
             }

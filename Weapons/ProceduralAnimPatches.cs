@@ -3,19 +3,8 @@ using Comfort.Common;
 using EFT.InventoryLogic;
 using EFT;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
-using Diz.Skinning;
-using EFT.CameraControl;
-using System.Collections;
-using EFT.Interactive;
-using EFT.Animations;
-using System.Linq;
-using static EFT.Player;
-using System.ComponentModel;
 
 namespace RealismMod
 {

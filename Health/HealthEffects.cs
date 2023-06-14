@@ -1,11 +1,6 @@
 ﻿using EFT;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using static Systems.Effects.Effects;
-using UnityEngine;
-using System.Linq;
 
 namespace RealismMod
 {

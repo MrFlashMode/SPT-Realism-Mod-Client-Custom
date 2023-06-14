@@ -1,29 +1,15 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using AmplifyMotion;
-using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
-using EFT.UI.Health;
 using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using Systems.Effects;
 using UnityEngine;
-using UnityEngine.Assertions;
-using static ActiveHealthControllerClass;
-using static CW2.Animations.PhysicsSimulator.Val;
-using static EFT.Player;
-using static RealismMod.Attributes;
-using static Systems.Effects.Effects;
 
 namespace RealismMod
 {

@@ -2,7 +2,6 @@
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
 using System;
 using System.Reflection;

@@ -1,10 +1,7 @@
 ﻿using EFT.InventoryLogic;
-using System.Collections.Generic;
 
 namespace RealismMod
 {
-
-
     public static class DisplayWeaponProperties
     {
         public static float ErgoDelta = 0;
@@ -37,7 +34,6 @@ namespace RealismMod
 
         public static float ErgnomicWeight = 0;
     }
-
 
     public static class WeaponProperties
     {

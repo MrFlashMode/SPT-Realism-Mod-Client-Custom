@@ -7,9 +7,6 @@ using System.Reflection;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using System;
-using static EFT.Player;
-using EFT.Interactive;
-using System.Linq;
 
 namespace RealismMod
 {

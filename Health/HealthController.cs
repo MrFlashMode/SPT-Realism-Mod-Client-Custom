@@ -5,20 +5,10 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using static ActiveHealthControllerClass;
-using System.Collections;
-using static System.Net.Mime.MediaTypeNames;
 using UnityEngine;
 using System.Reflection;
 using Comfort.Common;
-using HarmonyLib.Tools;
-using static Systems.Effects.Effects;
-using static RootMotion.Warning;
-using static CW2.Animations.PhysicsSimulator.Val;
-using EFT.Interactive;
-using System.Threading.Tasks;
-using Systems.Effects;
 
 namespace RealismMod
 {

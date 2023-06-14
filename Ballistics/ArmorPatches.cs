@@ -4,12 +4,8 @@ using System;
 using System.Reflection;
 using System.Linq;
 using EFT.InventoryLogic;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Comfort.Common;
 using static RealismMod.Attributes;
-using UnityEngine;
 
 namespace RealismMod
 {

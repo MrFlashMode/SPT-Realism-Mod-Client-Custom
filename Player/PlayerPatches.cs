@@ -1,13 +1,6 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
 using EFT;
-using EFT.Animations;
-using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 

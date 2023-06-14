@@ -1,17 +1,10 @@
 using Aki.Reflection.Patching;
-using Comfort.Common;
 using EFT;
-using EFT.Hideout;
-using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI.DragAndDrop;
 using HarmonyLib;
-using System;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
-using static EFT.Player;
-using System.Linq;
 
 namespace RealismMod
 {

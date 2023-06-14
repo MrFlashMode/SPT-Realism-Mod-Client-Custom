@@ -1,6 +1,4 @@
-﻿using EFT;
-
-namespace RealismMod
+﻿namespace RealismMod
 {
     public static class PlayerProperties
     {
@@ -69,7 +67,5 @@ namespace RealismMod
         public static float HealthStamRegenFactor = 1f;
 
         public static float HealthResourceRateFactor = 0f;
-
-
     }
 }

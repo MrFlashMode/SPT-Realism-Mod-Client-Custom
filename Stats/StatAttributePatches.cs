@@ -53,9 +53,11 @@ namespace RealismMod
             ChamberSpeed,
             Firerate,
             Damage,
+            BuckshotDamage,
             Penetration,
             ArmorDamage,
             FragmentationChance,
+            RicochetChance,
             BluntThroughput,
             ShotDispersion,
             GearReloadSpeed,
@@ -64,6 +66,7 @@ namespace RealismMod
             CanAds,
             NoiseReduction,
             ProjectileCount,
+            ProjectileDamage,
             Convergence,
             HBleedType,
             LimbHpPerTick,
@@ -111,6 +114,8 @@ namespace RealismMod
                     return "ПОВРЕЖДЕНИЕ БРОНИ";
                 case ENewItemAttributeId.FragmentationChance:
                     return "ВЕРОЯТНОСТЬ ФРАГМЕНТАЦИИ";
+                case ENewItemAttributeId.RicochetChance:
+                    return "ШАНС РИКОШЕТА";
                 case ENewItemAttributeId.BluntThroughput:
                     return "СНИЖЕНИЕ ЗАБРОНЕВОГО УРОНА";
                 case ENewItemAttributeId.ShotDispersion:
@@ -126,7 +131,11 @@ namespace RealismMod
                 case ENewItemAttributeId.NoiseReduction:
                     return "УРОВЕНЬ ПОДАВЛЕНИЯ ШУМА";
                 case ENewItemAttributeId.ProjectileCount:
-                    return "ФРАГМЕНТЫ";
+                    return "КОЛИЧЕСТВО ФРАГМЕНТОВ";
+                case ENewItemAttributeId.ProjectileDamage:
+                    return "УРОН ОДНОГО ФРАГМЕНТА";
+                case ENewItemAttributeId.BuckshotDamage:
+                    return "ОБЩИЙ УРОН";
                 case ENewItemAttributeId.Convergence:
                     return "НАСТИЛЬНОСТЬ";
                 case ENewItemAttributeId.HBleedType:

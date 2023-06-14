@@ -1,13 +1,10 @@
 ﻿using Aki.Common.Http;
 using Aki.Common.Utils;
 using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
-using EFT.Animals;
 using EFT.InventoryLogic;
-using EFT.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,7 +14,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
-using static RootMotion.FinalIK.AimPoser;
 
 namespace RealismMod
 {
@@ -356,10 +352,12 @@ namespace RealismMod
         public static bool ShowDispersion = true;
         public static bool ShowRecoilAngle = true;
         public static bool ShowSemiROF = false;
-        public static bool enableAmmoDamageDisp = false;
-        public static bool enableAmmoFragDisp = false;
-        public static bool enableAmmoPenDisp = false;
-        public static bool enableAmmoArmorDamageDisp = false;
+        public static bool enableAmmoDamageDisp = true;
+        public static bool enableAmmoFragDisp = true;
+        public static bool enableAmmoPenDisp = true;
+        public static bool enableAmmoArmorDamageDisp = true;
+        public static bool enableAmmoRicochetChanceDisp = true;
+        public static bool enableAmmoProjectileStatsDisp = true;
         //
 
         private void GetPaths()
@@ -390,10 +388,6 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
             IconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             IconCache.Add(ENewItemAttributeId.Firerate, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
-            IconCache.Add(ENewItemAttributeId.Damage, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
-            IconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icons/armorClass"));
-            IconCache.Add(ENewItemAttributeId.ArmorDamage, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
-            IconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.MalfunctionChance, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
             IconCache.Add(ENewItemAttributeId.CanSpall, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             IconCache.Add(ENewItemAttributeId.SpallReduction, Resources.Load<Sprite>("characteristics/icons/Velocity"));
@@ -401,11 +395,21 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.CanAds, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             IconCache.Add(ENewItemAttributeId.NoiseReduction, Resources.Load<Sprite>("characteristics/icons/icon_info_loudness"));
             IconCache.Add(ENewItemAttributeId.ProjectileCount, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
+            IconCache.Add(ENewItemAttributeId.ProjectileDamage, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             IconCache.Add(ENewItemAttributeId.Convergence, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
             IconCache.Add(ENewItemAttributeId.HBleedType, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.LimbHpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.HpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.RemoveTrnqt, Resources.Load<Sprite>("characteristics/icons/hpResource"));
+            
+            IconCache.Add(ENewItemAttributeId.Damage, Resources.Load<Sprite>("characteristics/icons/icon_info_damage"));
+            IconCache.Add(ENewItemAttributeId.BuckshotDamage, Resources.Load<Sprite>("characteristics/icons/icon_info_damage"));
+            IconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_shrapnelcount"));
+            IconCache.Add(EItemAttributeId.LightBleedingDelta, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(EItemAttributeId.HeavyBleedingDelta, Resources.Load<Sprite>("characteristics/icon_info_hydration"));
+            IconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icon_info_penetration"));
+            _ = LoadTexture(ENewItemAttributeId.ArmorDamage, Path.Combine(ModPath, "res\\armorDamage.png"));
+            _ = LoadTexture(ENewItemAttributeId.RicochetChance, Path.Combine(ModPath, "res\\ricochet.png"));
 
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
