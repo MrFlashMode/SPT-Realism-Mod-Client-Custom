@@ -16,9 +16,6 @@ namespace RealismMod
     {
         public static string[] botsToUseTacticalStances = { "sptBear", "sptUsec", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
 
-        private static float clickDelay = 0.2f;
-        private static float doubleClickTime = 0f;
-        private static bool clickTriggered = true;
         public static int SelectedStance = 0;
 
         public static bool IsActiveAiming = false;
@@ -182,57 +179,27 @@ namespace RealismMod
             {
                 if (!Plugin.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
+                    Plugin.StanceBlender.Target = Plugin.StanceBlender.Target == 0f ? 1f : 0f;
 
-                    //cycle stances
-                    if (Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
-                    {
-                        if (Time.time <= doubleClickTime)
-                        {
-                            Plugin.StanceBlender.Target = 0f;
-                            clickTriggered = true;
-                            SelectedStance = 0;
-                            IsHighReady = false;
-                            IsLowReady = false;
-                            IsShortStock = false;
-                            IsActiveAiming = false;
-                            WasActiveAim = false;
-                            WasHighReady = false;
-                            WasLowReady = false;
-                            WasShortStock = false;
-                        }
-                        else
-                        {
-                            clickTriggered = false;
-                            doubleClickTime = Time.time + clickDelay;
-                        }
-                    }
-                    else if (!clickTriggered)
-                    {
-                        if (Time.time > doubleClickTime)
-                        {
-                            Plugin.StanceBlender.Target = 1f;
-                            clickTriggered = true;
-                            SelectedStance++;
-                            SelectedStance = SelectedStance > 3 ? 1 : SelectedStance;
-                            IsHighReady = SelectedStance == 1 ? true : false;
-                            IsLowReady = SelectedStance == 2 ? true : false;
-                            IsShortStock = SelectedStance == 3 ? true : false;
-                            IsActiveAiming = false;
-                            WasHighReady = IsHighReady;
-                            WasLowReady = IsLowReady;
-                            WasShortStock = IsShortStock;
+                    IsHighReady = true;
+                    IsShortStock = false;
+                    IsLowReady = false;
+                    IsActiveAiming = false;
+                    WasActiveAim = IsActiveAiming;
+                    WasHighReady = IsHighReady;
+                    WasLowReady = IsLowReady;
+                    WasShortStock = IsShortStock;
 
-                            if (IsHighReady == true && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true))
-                            {
-                                DoHighReadyInjuredAnim = true;
-                            }
-                        }
+                    if (IsHighReady == true && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true))
+                    {
+                        IsHighReady = false;
+                        DoHighReadyInjuredAnim = true;
                     }
 
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if (Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
+                        if (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS)
                         {
                             Plugin.StanceBlender.Target = 1f;
                             IsActiveAiming = true;
@@ -255,7 +222,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if (Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
+                        if (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS)
                         {
                             Plugin.StanceBlender.Target = Plugin.StanceBlender.Target == 0f ? 1f : 0f;
                             IsActiveAiming = !IsActiveAiming;
@@ -270,56 +237,6 @@ namespace RealismMod
                                 IsShortStock = WasShortStock;
                             }
                         }
-                    }
-
-                    //short-stock
-                    if (Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
-                    {
-                        Plugin.StanceBlender.Target = Plugin.StanceBlender.Target == 0f ? 1f : 0f;
-
-                        IsShortStock = !IsShortStock;
-                        IsHighReady = false;
-                        IsLowReady = false;
-                        IsActiveAiming = false;
-                        WasActiveAim = IsActiveAiming;
-                        WasHighReady = IsHighReady;
-                        WasLowReady = IsLowReady;
-                        WasShortStock = IsShortStock;
-                    }
-
-                    //high ready
-                    if (Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
-                    {
-                        Plugin.StanceBlender.Target = Plugin.StanceBlender.Target == 0f ? 1f : 0f;
-
-                        IsHighReady = !IsHighReady;
-                        IsShortStock = false;
-                        IsLowReady = false;
-                        IsActiveAiming = false;
-                        WasActiveAim = IsActiveAiming;
-                        WasHighReady = IsHighReady;
-                        WasLowReady = IsLowReady;
-                        WasShortStock = IsShortStock;
-
-                        if (IsHighReady == true && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true))
-                        {
-                            DoHighReadyInjuredAnim = true;
-                        }
-                    }
-
-                    //low ready
-                    if (Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
-                    {
-                        Plugin.StanceBlender.Target = Plugin.StanceBlender.Target == 0f ? 1f : 0f;
-
-                        IsLowReady = !IsLowReady;
-                        IsHighReady = false;
-                        IsActiveAiming = false;
-                        IsShortStock = false;
-                        WasActiveAim = IsActiveAiming;
-                        WasHighReady = IsHighReady;
-                        WasLowReady = IsLowReady;
-                        WasShortStock = IsShortStock;
                     }
 
                     if (Plugin.IsAiming)
@@ -343,11 +260,6 @@ namespace RealismMod
                         IsShortStock = WasShortStock;
                         IsActiveAiming = WasActiveAim;
                         HaveSetAiming = false;
-                    }
-
-                    if (Plugin.EnableTacSprint.Value && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true))
-                    {
-                        DoHighReadyInjuredAnim = true;
                     }
 
                     if (DoHighReadyInjuredAnim)
@@ -568,7 +480,7 @@ namespace RealismMod
                 __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
             }
 
-            if ((Plugin.EnableTacSprint.Value || StanceController.WasHighReady) && (!PlayerProperties.RightArmRuined || !PlayerProperties.LeftArmRuined))
+            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.LeftArmRuined && !PlayerProperties.RightArmRuined)
             {
                 player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)

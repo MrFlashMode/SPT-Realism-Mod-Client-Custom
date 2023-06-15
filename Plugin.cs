@@ -53,12 +53,6 @@ namespace RealismMod
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<bool> EnableHipfireRecoilClimb { get; set; }
 
-        public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> LowReadyKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> HighReadyKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> ShortStockKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> CycleStancesKeybind { get; set; }
-
         public static ConfigEntry<bool> ToggleActiveAim { get; set; }
         public static ConfigEntry<bool> StanceToggleDevice { get; set; }
         public static ConfigEntry<bool> ActiveAimReload { get; set; }
@@ -205,27 +199,27 @@ namespace RealismMod
         public static float ActiveAimResetRotationY = 50.0f;
         public static float ActiveAimResetRotationZ = -3.0f;
 
-        public static float HighReadyAdditionalRotationSpeedMulti = 1.25f;
-        public static float HighReadyResetRotationMulti = 3.5f;
-        public static float HighReadyRotationMulti = 1.8f;
-        public static float HighReadyResetSpeedMulti = 5.0f;
-        public static float HighReadySpeedMulti = 6.0f;
+        public static float HighReadyAdditionalRotationSpeedMulti = 0f;
+        public static float HighReadyResetRotationMulti = 0f;
+        public static float HighReadyRotationMulti = 0f;
+        public static float HighReadyResetSpeedMulti = 0f;
+        public static float HighReadySpeedMulti = 0f;
 
-        public static float HighReadyOffsetX = 0.005f;
-        public static float HighReadyOffsetY = 0.04f;
-        public static float HighReadyOffsetZ = -0.05f;
+        public static float HighReadyOffsetX = 0f;
+        public static float HighReadyOffsetY = 0f;
+        public static float HighReadyOffsetZ = 0f;
 
-        public static float HighReadyRotationX = -10.0f;
-        public static float HighReadyRotationY = 3.0f;
-        public static float HighReadyRotationZ = 3.0f;
+        public static float HighReadyRotationX = 0f;
+        public static float HighReadyRotationY = 0f;
+        public static float HighReadyRotationZ = 0f;
 
-        public static float HighReadyAdditionalRotationX = -10.0f;
-        public static float HighReadyAdditionalRotationY = 10f;
-        public static float HighReadyAdditionalRotationZ = 5f;
+        public static float HighReadyAdditionalRotationX = 0f;
+        public static float HighReadyAdditionalRotationY = 0f;
+        public static float HighReadyAdditionalRotationZ = 0f;
 
-        public static float HighReadyResetRotationX = 0.5f;
-        public static float HighReadyResetRotationY = 2.0f;
-        public static float HighReadyResetRotationZ = 1.0f;
+        public static float HighReadyResetRotationX = 0f;
+        public static float HighReadyResetRotationY = 0f;
+        public static float HighReadyResetRotationZ = 0f;
 
         public static float LowReadyAdditionalRotationSpeedMulti = 0.5f;
         public static float LowReadyResetRotationMulti = 2.5f;
@@ -358,6 +352,12 @@ namespace RealismMod
         public static bool enableAmmoArmorDamageDisp = true;
         public static bool enableAmmoRicochetChanceDisp = true;
         public static bool enableAmmoProjectileStatsDisp = true;
+
+        public static KeyboardShortcut ActiveAimKeybind = KeyboardShortcut.Empty;
+        public static KeyboardShortcut LowReadyKeybind = KeyboardShortcut.Empty;
+        public static KeyboardShortcut HighReadyKeybind = KeyboardShortcut.Empty;
+        public static KeyboardShortcut ShortStockKeybind = KeyboardShortcut.Empty;
+        public static KeyboardShortcut CycleStancesKeybind = KeyboardShortcut.Empty;
         //
 
         private void GetPaths()
@@ -870,12 +870,6 @@ namespace RealismMod
             ToggleActiveAim = Config.Bind<bool>(weapAimAndPos, "Использовать режим нажатия для Угловой стойки", true, new ConfigDescription("Если стоит True, то вход и выход из Active Aim будет по нажатию ПКМ. В противном случае по зажатию ПКМ", null, new ConfigurationManagerAttributes { Order = 8 }));
             ActiveAimReload = Config.Bind<bool>(weapAimAndPos, "Разрешить перезарядку оружия не выходя из Угловой стойки", false, new ConfigDescription("Разрешает производить перезарядку оружия прямо во время Active Aim стойки с бонусом к скорости (может выглядеть немного странно и неряшливо).", null, new ConfigurationManagerAttributes { Order = 7 }));
             StanceToggleDevice = Config.Bind<bool>(weapAimAndPos, "Смена стойки выключает ЛЦУ/Фонарики", false, new ConfigDescription("При смене стойки на Высокую или Низкую, ЛЦУ и Фонарики будут выключать.", null, new ConfigurationManagerAttributes { Order = 6 }));
-
-            CycleStancesKeybind = Config.Bind(weapAimAndPos, "Клавиша цикличной смены положения оружия", new KeyboardShortcut(KeyCode.None), new ConfigDescription("Цикличная смена положений по нажатию кнопки, между Высокой, Низкой и Компактной стойками. Двойное нажатие возвращает стандартное положение.", null, new ConfigurationManagerAttributes { Order = 5 }));
-            ActiveAimKeybind = Config.Bind(weapAimAndPos, "Клавиша Угловой стойки", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 4 }));
-            HighReadyKeybind = Config.Bind(weapAimAndPos, "Клавиша Высокой стойки", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 3 }));
-            LowReadyKeybind = Config.Bind(weapAimAndPos, "Клавиша Низкой стойки", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 2 }));
-            ShortStockKeybind = Config.Bind(weapAimAndPos, "Клавига Компактной стойки", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             //EnableMedicalOvehaul = Config.Bind<bool>(healthSettings, "Включить пассивную регенерацию ХП", true, new ConfigDescription("Включает пассивную регенерацию ХП, если вы потеряли здоровье от падения, от колючей проволки, либо от эффекта дегидрации", null, new ConfigurationManagerAttributes { Order = 100 }));
             //TrnqtEffect = Config.Bind<bool>(healthSettings, "Включить эффект от Жгута", true, new ConfigDescription("Жгут будет понижает очки здоровья конечность на которую он был наложен.", null, new ConfigurationManagerAttributes { Order = 90 }));
