@@ -1,19 +1,17 @@
-﻿using Aki.Reflection.Patching;
+﻿using System;
+using System.Collections;
+using System.Linq;
+using System.Reflection;
+using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace RealismMod
 {
-    //in-raid healing
     public class ApplyItemPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -21,6 +19,7 @@ namespace RealismMod
             return typeof(GClass2105).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(GClass2105 __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
@@ -29,23 +28,23 @@ namespace RealismMod
             bool canUse = true;
             if (__instance.Player.IsYourPlayer && __instance.CanApplyItem(item, bodyPart))
             {
-                if (((medsClass = (item as MedsClass)) != null)) 
+                if (((medsClass = (item as MedsClass)) != null))
                 {
-                    if (Plugin.EnableLogging.Value) 
+                    if (Plugin.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
 
-                    RealismHealthController.CanUseMedItem(Logger, __instance.Player, /*bodyPart,*/ item, ref canUse);
+                    RealismHealthController.CanUseMedItem(Logger, __instance.Player, bodyPart, item, ref canUse);
                 }
-                if((foodClass = (item as FoodClass)) != null)
+                if ((foodClass = (item as FoodClass)) != null)
                 {
                     if (Plugin.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Food");
                     }
-           
-                    if (Plugin.GearBlocksEat.Value) 
+
+                    if (Plugin.GearBlocksEat)
                     {
                         RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
                     }
@@ -55,24 +54,21 @@ namespace RealismMod
                 return canUse;
             }
             return true;
-
         }
     }
 
-
-
-    //when using quickslot
     public class SetQuickSlotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("SetQuickSlotItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("SetQuickSlotItem", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
-        private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
+        private static bool Prefix(Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2416_0").GetValue(__instance);
+            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(Player), "GClass2416_0").GetValue(__instance);
             Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
@@ -90,7 +86,6 @@ namespace RealismMod
         }
     }
 
-
     public class RestoreBodyPartPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -101,10 +96,9 @@ namespace RealismMod
 
         private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthControllerClass instance, EBodyPart bodyPart)
         {
-
             PropertyInfo bodyPartStateProperty = typeof(ActiveHealthControllerClass).GetProperty("IReadOnlyDictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
             var bodyPartStateDict = (IDictionary)bodyPartStateProperty.GetMethod.Invoke(instance, null);
-            
+
             object bodyPartStateInstance;
             if (bodyPartStateDict.Contains(bodyPart))
             {
@@ -122,14 +116,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
             SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1679_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> actionStruct = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthControllerClass), "action_15").GetValue(__instance);
             MethodInfo method_45 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_45");
             MethodInfo method_38 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_38");
 
-            if (!bodyPartStateWrapper.IsDestroyed)  
+            if (!bodyPartStateWrapper.IsDestroyed)
             {
                 __result = false;
                 return false;
@@ -140,7 +133,7 @@ namespace RealismMod
             healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
             bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
             method_45.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
-            method_38.Invoke(__instance, new object[] { bodyPart});
+            method_38.Invoke(__instance, new object[] { bodyPart });
 
             Action<EBodyPart, ValueStruct> action = actionStruct;
             if (action != null)
@@ -152,7 +145,6 @@ namespace RealismMod
         }
     }
 
-
     public class StamRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -160,6 +152,7 @@ namespace RealismMod
             return typeof(GClass704).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(GClass704 __instance, float baseValue, ref float __result)
         {
@@ -182,7 +175,6 @@ namespace RealismMod
         {
             _targetType = AccessTools.TypeByName("MedsController");
             _targetMethod = AccessTools.Method(_targetType, "Remove");
-
         }
 
         protected override MethodBase GetTargetMethod()
@@ -210,13 +202,16 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void Postfix()
+        private static void Postfix(FlyingBulletSoundPlayer __instance)
         {
-            Logger.LogWarning("FLYING BULLET !!!! =====> ==> ===>");
+            Player player = Utils.GetPlayer();
+            float stressResist = player.Skills.StressPain.Value;
+            float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
+            float negativeEffectDuration = (float)Math.Round(10f * (1f - stressResist), 2);
+            float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
+            RealismHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
-
-
 
     public class HCApplyDamagePatch : ModulePatch
     {
@@ -225,14 +220,14 @@ namespace RealismMod
             return typeof(ActiveHealthControllerClass).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
+        private static readonly EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
 
         [PatchPrefix]
         private static void Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
         {
             if (__instance.Player.IsYourPlayer)
             {
-                if (Plugin.EnableLogging.Value) 
+                if (Plugin.EnableLogging.Value)
                 {
                     Logger.LogWarning("=========");
                     Logger.LogWarning("part = " + bodyPart);
@@ -247,8 +242,8 @@ namespace RealismMod
                 {
                     float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
-                    float remainingHp = currentHp / maxHp;  
-                   
+                    float remainingHp = currentHp / maxHp;
+
                     if (remainingHp < 0.2f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
@@ -259,7 +254,8 @@ namespace RealismMod
                         damage = 0;
                     }
 
-                    float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
+                    float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
+                    float stressResist = __instance.Player.Skills.StressPain.Value;
                     float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
@@ -286,32 +282,34 @@ namespace RealismMod
                         HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         RealismHealthController.AddCustomEffect(regenEffect, false);
                     }
-                    if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
-                    {
-                        DamageTracker.UpdateDamage(damageType, bodyPart, damage);
-                    }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f))
                     {
                         RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
+                    }
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
+                    {
+                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
+                        float negativeEffectDuration = (float)Math.Round(20f * (1f - (stressResist / 2)), 2);
+                        float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
+                        RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
                     }
                 }
             }
         }
     }
 
-
     public class ProceedPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface113>), typeof(int), typeof(bool) }, null);
+            return typeof(Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface113>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
             string medType = MedProperties.MedType(meds);
+
             if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
                 if (bodyPart == EBodyPart.Common)
@@ -328,19 +326,20 @@ namespace RealismMod
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                    if (Plugin.GearBlocksEat.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                    if (Plugin.GearBlocksEat && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
                     {
-                        NotificationManagerClass.DisplayWarningNotification("Не могу принять таблетки, рот заблокирован Забралом/ПНВ/Маской. Снимите Маску/поднимите Забрало или ПНВ.", EFT.Communications.ENotificationDurationType.Long);
+                        NotificationManagerClass.DisplayWarningNotification("Не могу принять таблетки, мешает Забрало/ПНВ/Маска.", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
-                    else if (medType == "pills")
-                    {
-                        return true;
-                    }
-                    else if (medType == "vas")
-                    {
-                        return true;
-                    }
+                    /*
+                    //else if (medType == "pills")
+                    //{
+                    //    return true;
+                    //}
+                    //else if (medType == "vas")
+                    //{
+                    //    return true;
+                    //}
 
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
@@ -350,31 +349,25 @@ namespace RealismMod
 
                         RealismHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
 
-                        bool hasHeavyBleed = false;
-                        bool hasLightBleed = false;
-                        bool hasFracture = false;
-
-                        IEnumerable<IEffect> effects = RealismHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
                         float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
                         float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
-                        
-                        
+
                         if (medType == "surg" && (isBody || isHead || !isNotLimb))
                         {
                             if (currentHp == 0)
                             {
                                 bodyPart = part;
-                                break;
+                                //break;
+                                continue;
                             }
                             continue;
                         }
-
                         if (bodyPart != EBodyPart.Common)
                         {
                             break;
                         }
                     }
+                    */
                 }
             }
             return true;

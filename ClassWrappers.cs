@@ -1,18 +1,13 @@
-﻿using EFT.HealthSystem;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+﻿using System.Reflection;
+using EFT.HealthSystem;
 
 namespace RealismMod
 {
     public class BodyPartStateWrapper
     {
         private readonly object bodyPartStateInstance;
-
-        private FieldInfo isDestroyedField;
-
-        private FieldInfo healthField;
+        private readonly FieldInfo isDestroyedField;
+        private readonly FieldInfo healthField;
 
         public BodyPartStateWrapper(object bodyPartStateInstance)
         {

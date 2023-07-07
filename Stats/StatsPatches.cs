@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Reflection;
 using Aki.Reflection.Patching;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System.Reflection;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RealismMod
@@ -15,6 +15,7 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_SingleFireRate", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
@@ -38,6 +39,7 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_FireRate", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
@@ -54,7 +56,6 @@ namespace RealismMod
         }
     }
 
-
     //this method sets player weapon ergo value. For some reason I've removed the injury penalty? Probably because I already apply injury mulit myself 
     public class method_9Patch : ModulePatch
     {
@@ -63,16 +64,15 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("method_9", BindingFlags.Instance | BindingFlags.NonPublic);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
-        {   
-            //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
-            //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
+        {
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
 
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1680 skillsClass = (SkillsClass.GClass1680)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1680_0").GetValue(__instance);
+                SkillsClass.GClass1680 skillsClass = (SkillsClass.GClass1680)AccessTools.Field(typeof(Player.FirearmController), "gclass1680_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
@@ -82,7 +82,6 @@ namespace RealismMod
             }
         }
     }
-
 
     public class ErgoDeltaPatch : ModulePatch
     {
@@ -97,6 +96,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
+
                 if (PlayerProperties.IsInReloadOpertation)
                 {
                     __result = p.FinalStatCalc(ref __instance);
@@ -188,11 +188,9 @@ namespace RealismMod
             float totalCOI = 0f;
             float totalCOIDelta = 0f;
 
-
-            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta,  false);
+            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta, false);
 
             float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
-      /*      float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);*/
 
             float ergoFactor = Mathf.Max(1, 80f - totalErgo); //as an experiment, use total ergo as ergonomicWeight
             float ergoFactorLessMag = Mathf.Max(1, 80f - WeaponProperties.InitTotalErgo);  //as an experiment, use total ergo as ergonomicWeight
@@ -230,7 +228,6 @@ namespace RealismMod
                 Logger.LogWarning("Torque = " + totalTorque);
             }
 
-
             WeaponProperties.Dispersion = totalDispersion;
             WeaponProperties.CamRecoil = totalCamRecoil;
             WeaponProperties.RecoilAngle = totalRecoilAngle;
@@ -258,6 +255,7 @@ namespace RealismMod
             WeaponProperties._IsManuallyOperated = isManual;
 
             WeaponProperties.ShouldGetSemiIncrease = false;
+
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
             {
                 WeaponProperties.ShouldGetSemiIncrease = true;
@@ -329,7 +327,6 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
-
             if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
             {
                 hasShoulderContact = true;
@@ -338,6 +335,7 @@ namespace RealismMod
             for (int i = 0; i < __instance.Mods.Length; i++)
             {
                 Mod mod = __instance.Mods[i];
+
                 if (!Utils.IsMagazine(mod))
                 {
                     float modWeight = __instance.Mods[i].Weight;
@@ -362,13 +360,16 @@ namespace RealismMod
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(__instance.Mods[i]);
                     float modDuraBurn = __instance.Mods[i].DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
+                    modVRecoil += modConv > 0f ? modConv * -1f : 0f;
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                     StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv);
+
                     if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]) == true)
                     {
                         canCycleSubs = true;
                     }
+
                     modBurnRatio *= modDuraBurn;
                 }
             }
@@ -382,6 +383,7 @@ namespace RealismMod
             }
 
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
+
             if (weapType == "bullpup")
             {
                 totalLoudness *= 1.1f;
@@ -424,7 +426,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 __result = WeaponProperties.COIDelta;
@@ -447,20 +448,22 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result, bool includeAmmo)
         {
-
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 float mountFactor = 1f;
+
                 if (Utils.IsReady)
                 {
                     Player player = Utils.GetPlayer();
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
+
                     if (currentAimingMod != null)
                     {
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
                             mountFactor += (currentAimingMod.Accuracy / 100f);
                         }
+
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
                         foreach (Item item in parents)
                         {
@@ -474,11 +477,13 @@ namespace RealismMod
                 }
 
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * mountFactor;
+
                 if (!includeAmmo)
                 {
                     __result = totalCoi;
                     return false;
                 }
+
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = totalCoi * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
                 return false;
@@ -523,17 +528,15 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Weapon).GetMethod("GetDurabilityLossOnShot", BindingFlags.Instance | BindingFlags.Public);
-
         }
 
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
         {
-
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 modsBurnRatio = WeaponProperties.TotalModDuraBurn;
-                __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
+                __result = __instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
                 return false;
             }
             else
@@ -554,12 +557,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+
             if (player.IsYourPlayer == true)
             {
                 __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff * 1.5f);
 
-                if (!Utils.HasRunErgoWeightCalc) 
+                if (!Utils.HasRunErgoWeightCalc)
                 {
                     __result = 0;
                     return false;
@@ -580,6 +584,4 @@ namespace RealismMod
             }
         }
     }
-
-
 }

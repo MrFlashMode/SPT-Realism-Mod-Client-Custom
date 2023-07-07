@@ -73,6 +73,5 @@ namespace RealismMod
         {
             return !Utils.NullCheck(armorItem.ConflictingItems) && float.TryParse(armorItem.ConflictingItems[14], out float result) ? result : 0f;
         }
-
     }
 }

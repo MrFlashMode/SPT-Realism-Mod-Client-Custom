@@ -1,20 +1,23 @@
-﻿using EFT;
-using System;
+﻿using System;
 using System.Reflection;
+using BepInEx.Logging;
+using EFT;
 
 namespace RealismMod
 {
-    public enum EHealthEffectType 
+    public enum EHealthEffectType
     {
         Surgery,
         Tourniquet,
-        HealthRegen
+        HealthRegen,
+        Adrenaline,
+        ResourceRate
     }
 
     public interface IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; }
+        public float? Duration { get; }
         public float TimeExisted { get; set; }
         public void Tick();
         public Player Player { get; }
@@ -25,7 +28,7 @@ namespace RealismMod
     public class HealthRegenEffect : IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; set; }
+        public float? Duration { get; set; }
         public float TimeExisted { get; set; }
         public float HpPerTick { get; }
         public Player Player { get; }
@@ -35,7 +38,7 @@ namespace RealismMod
         public EDamageType DamageType { get; }
         public EHealthEffectType EffectType { get; }
 
-        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
+        public HealthRegenEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -46,7 +49,7 @@ namespace RealismMod
             Player = player;
             Delay = delay;
             DamageType = damageType;
-            EffectType = EHealthEffectType.HealthRegen;    
+            EffectType = EHealthEffectType.HealthRegen;
         }
 
         public void Tick()
@@ -58,7 +61,7 @@ namespace RealismMod
             {
                 if (Delay <= 0f)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
@@ -67,9 +70,45 @@ namespace RealismMod
                 }
             }
 
-            if(HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp == 0)
+            if (HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp == 0)
             {
                 Duration = 0;
+            }
+        }
+    }
+
+    public class ResourceRateEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public float? Duration { get; set; }
+        public float TimeExisted { get; set; }
+        public float ResourcePerTick { get; }
+        public Player Player { get; }
+        public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+
+        public ResourceRateEffect(float resourcePerTick, float? dur, Player player, float delay)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.ResourceRate;
+            BodyPart = EBodyPart.Stomach;
+            ResourcePerTick = resourcePerTick;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0f)
+            {
+                Duration -= 3;
+
+                MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
+                Type resourceRatesType = typeof(ResourceRates);
+                MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(resourceRatesType);
+                ResourceRates healthChangeInstance = new ResourceRates();
+                genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 0f, ResourcePerTick, null });
             }
         }
     }
@@ -78,20 +117,20 @@ namespace RealismMod
     {
         protected override void Started()
         {
-            this.hpPerTick = base.Strength;
-            this.SetHealthRatesPerSecond(this.hpPerTick, 0f, 0f, 0f);
-            this.bodyPart = base.BodyPart;
+            hpPerTick = Strength;
+            SetHealthRatesPerSecond(hpPerTick, 0f, 0f, 0f);
+            bodyPart = BodyPart;
         }
 
         protected override void RegularUpdate(float deltaTime)
         {
-            this.time += deltaTime;
-            if (this.time < 3f)
+            time += deltaTime;
+            if (time < 3f)
             {
                 return;
             }
-            this.time -= 3f;
-            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, GClass2146.Existence);
+            time -= 3f;
+            HealthController.ChangeHealth(bodyPart, hpPerTick, GClass2146.Existence);
         }
 
         private float hpPerTick;
@@ -99,6 +138,33 @@ namespace RealismMod
         private float time;
 
         private EBodyPart bodyPart;
+    }
 
+    public class ResourceRates : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
+    {
+        protected override void Started()
+        {
+            resourcePerTick = base.Strength;
+            bodyPart = base.BodyPart;
+            SetHealthRatesPerSecond(0f, -resourcePerTick, -resourcePerTick, 0f);
+        }
+
+        protected override void RegularUpdate(float deltaTime)
+        {
+            time += deltaTime;
+            if (time < 3f)
+            {
+                return;
+            }
+            time -= 3f;
+            base.HealthController.ChangeEnergy(-resourcePerTick);
+            base.HealthController.ChangeHydration(-resourcePerTick);
+        }
+
+        private float resourcePerTick;
+
+        private float time;
+
+        private EBodyPart bodyPart;
     }
 }

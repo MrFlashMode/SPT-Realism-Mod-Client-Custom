@@ -1,15 +1,15 @@
-﻿using Aki.Reflection.Patching;
-using EFT.InventoryLogic;
-using EFT;
-using System;
-using System.Reflection;
-using UnityEngine;
-using Comfort.Common;
-using System.Linq;
-using HarmonyLib;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Aki.Reflection.Patching;
 using BepInEx.Logging;
+using Comfort.Common;
+using EFT;
 using EFT.Interactive;
+using EFT.InventoryLogic;
+using HarmonyLib;
+using UnityEngine;
 
 namespace RealismMod
 {
@@ -41,7 +41,7 @@ namespace RealismMod
         UnknownOrientation
     }
 
-    public static class HitBox 
+    public static class HitBox
     {
         public const string Head = "Base HumanHead";
         public const string UpperTorso = "Base HumanSpine3";
@@ -58,7 +58,7 @@ namespace RealismMod
         public const string RightThigh = "Base HumanRThigh1";
         public const string RightCalf = "Base HumanRCalf";
 
-        private static string[] humanBodyColliders = { HitBox.Head, HitBox.UpperTorso, HitBox.LowerTorso, HitBox.Pelvis, HitBox.LeftThigh, HitBox.RightThigh, HitBox.LeftCalf, HitBox.RightCalf, HitBox.RightUpperArm, HitBox.LeftUpperArm, HitBox.RightForearm, HitBox.LeftForearm };
+        private static readonly string[] humanBodyColliders = { Head, UpperTorso, LowerTorso, Pelvis, LeftThigh, RightThigh, LeftCalf, RightCalf, RightUpperArm, LeftUpperArm, RightForearm, LeftForearm };
 
         public static bool HitValidCollider(string hitCollider)
         {
@@ -152,7 +152,7 @@ namespace RealismMod
             }
         }
 
-        private static bool hitSpine(Vector3 localPoint, bool isSideHit, float spineZ, ManualLogSource logger) 
+        private static bool hitSpine(Vector3 localPoint, bool isSideHit, float spineZ, ManualLogSource logger)
         {
             if (localPoint.z >= -spineZ && localPoint.z <= spineZ && !isSideHit)
             {
@@ -214,7 +214,7 @@ namespace RealismMod
                             return EHitZone.Heart;
                         }
 
-                        if (hitSpine(localPoint, isSideHit, spineZ, logger)) 
+                        if (hitSpine(localPoint, isSideHit, spineZ, logger))
                         {
                             return EHitZone.Spine;
                         }
@@ -353,7 +353,6 @@ namespace RealismMod
 
         public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)
         {
-
             float topOfPlate = hitOrientation == EHitOrientation.BackHit ? -0.166f : -0.24f;
             float bottomOfPlate = hitOrientation == EHitOrientation.BackHit || hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.LeftSideHit ? -0.22f : -0.13f;
             float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.125f : 0.13f;
@@ -383,7 +382,7 @@ namespace RealismMod
                     hasBypassedArmor = true;
                 }
             }
-            else if(hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm)
+            else if (hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm)
             {
                 if (Plugin.EnableBallisticsLogging.Value == true)
                 {
@@ -392,7 +391,7 @@ namespace RealismMod
                 hasBypassedArmor = true;
             }
 
-            if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit) 
+            if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit)
             {
                 if (hitPart == HitBox.UpperTorso)
                 {
@@ -488,7 +487,7 @@ namespace RealismMod
                 }
             }
 
-            if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit)) 
+            if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit))
             {
                 if (!hasSideArmor)
                 {
@@ -513,7 +512,7 @@ namespace RealismMod
             if (hitOrientation == EHitOrientation.TopHit && hitPart == HitBox.UpperTorso)
             {
                 float neckArmorTopZ = 0.075f;
-  
+
                 if (!hasNeckArmor)
                 {
                     if (Plugin.EnableBallisticsLogging.Value == true)
@@ -565,11 +564,11 @@ namespace RealismMod
         private static bool Prefix(bool __result)
         {
             __result = false;
-            return false;  
+            return false;
         }
     }
 
-    public class IsPenetratedPatch : ModulePatch 
+    public class IsPenetratedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -579,11 +578,11 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(EFT.Ballistics.BallisticCollider __instance, GClass2624 shot, Vector3 hitPoint)
         {
-            if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm )
+            if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm)
             {
                 __instance.PenetrationLevel = 10f;
                 __instance.PenetrationChance = 0.5f;
-            } 
+            }
         }
     }
 
@@ -596,7 +595,7 @@ namespace RealismMod
 
         private static int playCounter = 0;
 
-        private static void modifyDamageByHitZone(string hitPart, EHitZone hitZone, ref DamageInfo di) 
+        private static void modifyDamageByHitZone(string hitPart, EHitZone hitZone, ref DamageInfo di)
         {
             bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
             bool hitThigh = hitPart == HitBox.LeftThigh || hitPart == HitBox.RightThigh ? true : false;
@@ -627,7 +626,7 @@ namespace RealismMod
                 di.HeavyBleedingDelta *= 0.8f;
                 return;
             }
-            if (hitZone == EHitZone.AZone) 
+            if (hitZone == EHitZone.AZone)
             {
                 di.Damage *= HitZoneModifiers.AZone;
                 di.HeavyBleedingDelta *= 1.5f;
@@ -664,45 +663,41 @@ namespace RealismMod
             }
         }
 
-        private static void playBodyHitSound(EHitZone hitZone, Vector3 pos, string hitBox) 
+        private static void playBodyHitSound(EHitZone hitZone, Vector3 pos, string hitBox)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 2.7f * Plugin.CloseHitSoundMulti;
-            float volDist = 4.25f * Plugin.FarHitSoundMulti;
+            float volClose = 2.5f * Plugin.CloseHitSoundMulti;
+            float volDist = 4.3f * Plugin.FarHitSoundMulti;
 
             if (hitZone == EHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
 
             }
             else if (hitBox == HitBox.Head)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 200, volClose * 1.25f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
             }
             else if (hitZone == EHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
             }
             else if (hitZone == EHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 1.5f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
+            }
+			
+            string audioClip = "flesh_dist_1.wav";
+            if (dist >= 40)
+            {
+                audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
             }
             else
             {
-                string audioClip = "flesh_dist_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-
-
+                audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
+
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
         }
 
         [PatchPrefix]
@@ -726,55 +721,24 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            if (Plugin.EnableBodyHitZones && !__instance.Blunt && __instance.DamageType == EDamageType.Bullet) 
+            if (Plugin.EnableBodyHitZones && !__instance.Blunt && __instance.DamageType == EDamageType.Bullet)
             {
                 string hitCollider = shot.HittedBallisticCollider.name;
                 if (HitBox.HitValidCollider(hitCollider))
                 {
                     Collider col = shot.HitCollider;
                     Vector3 localPoint = col.transform.InverseTransformPoint(shot.HitPoint);
-   /*                 Vector3 normalizedPoint = localPoint.normalized;*/
                     Vector3 hitNormal = shot.HitNormal;
                     EHitOrientation hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
                     EHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
                     modifyDamageByHitZone(hitCollider, hitZone, ref __instance);
 
-                    if (Plugin.EnableHitSounds) 
+                    if (Plugin.EnableHitSounds)
                     {
                         playBodyHitSound(hitZone, col.transform.position, hitCollider);
                         playCounter++;
                         playCounter = playCounter > 2 ? 0 : playCounter;
                     }
-/*
-                    if (!shot.Player.IsYourPlayer) 
-                    {
-                        Logger.LogWarning("=========Player Hit Damage Info==========");
-                        Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
-                        Logger.LogWarning("ammo id = " + shot.Ammo.TemplateId);
-                        Logger.LogWarning("hit collider = " + hitCollider);
-                        Logger.LogWarning("hit orientation = " + hitOrientation);
-                        Logger.LogWarning("hit zone = " + hitZone);
-                        Logger.LogWarning("damage = " + __instance.Damage);
-                        Logger.LogWarning("x = " + localPoint.x);
-                        Logger.LogWarning("y = " + localPoint.y);
-                        Logger.LogWarning("z = " + localPoint.z);
-                           Logger.LogWarning("===================");
-                    }
-                    else
-                    {
-                        Logger.LogWarning("-------------Bot Hit Damage Info---------------");
-                        Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
-                        Logger.LogWarning("ammo id = " + shot.Ammo.TemplateId);
-                        Logger.LogWarning("hit collider = " + hitCollider);
-                        Logger.LogWarning("hit orientation = " + hitOrientation);
-                        Logger.LogWarning("hit zone = " + hitZone);
-                        Logger.LogWarning("damage = " + __instance.Damage);
-                        Logger.LogWarning("x = " + localPoint.x);
-                        Logger.LogWarning("y = " + localPoint.y);
-                        Logger.LogWarning("z = " + localPoint.z);
-                        Logger.LogWarning("------------------");
-                    }*/
-
 
                     if (Plugin.EnableBallisticsLogging.Value)
                     {
@@ -790,7 +754,6 @@ namespace RealismMod
                     }
                 }
             }
-
 
             BulletClass bulletClass;
             if ((bulletClass = (shot.Ammo as BulletClass)) != null)
@@ -834,11 +797,11 @@ namespace RealismMod
         private static float currentDura;
         private static float maxDura;
 
-        private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
-        
-        private static System.Random randNum = new System.Random();
+        private static readonly List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
 
-        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
+        private static readonly System.Random randNum = new System.Random();
+
+        private static readonly List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
 
         private static void SetArmorStats(ArmorComponent armor)
         {
@@ -885,7 +848,6 @@ namespace RealismMod
 
                 Collider col = damageInfo.HitCollider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-        /*        Vector3 normalizedPoint = localPoint.normalized;*/
                 Vector3 hitNormal = damageInfo.HitNormal;
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
@@ -899,7 +861,6 @@ namespace RealismMod
                 {
                     hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
                 }
-
 
                 if (Plugin.EnableBallisticsLogging.Value == true)
                 {
@@ -976,7 +937,6 @@ namespace RealismMod
                         int rnd = Math.Max(1, randNum.Next(bodyParts.Count));
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
-
                         if (Plugin.EnableBallisticsLogging.Value)
                         {
                             Logger.LogWarning("===========SPALLING=============== ");
@@ -991,7 +951,6 @@ namespace RealismMod
 
                         foreach (EBodyPart part in bodyParts.OrderBy(x => randNum.Next()).Take(rnd))
                         {
-
                             if (part == EBodyPart.Common)
                             {
                                 return;
@@ -1004,7 +963,7 @@ namespace RealismMod
                             {
                                 continue;
                             }
-                            else if (part == EBodyPart.Head) 
+                            else if (part == EBodyPart.Head)
                             {
                                 damage = hasNeckArmor == true ? Mathf.Min(10, splitSpallingDmg * 0.5f) : Mathf.Min(10, splitSpallingDmg);
                                 bleedFactor = hasNeckArmor == true ? 0f : bleedFactor;
@@ -1031,7 +990,6 @@ namespace RealismMod
             }
         }
     }
-
 
     public class SetPenetrationStatusPatch : ModulePatch
     {
@@ -1061,7 +1019,7 @@ namespace RealismMod
                     {
                         audioClip = playCounter == 0 ? "aramid_1.wav" : playCounter == 1 ? "aramid_2.wav" : "aramid_3.wav";
                     }
-                    else 
+                    else
                     {
                         audioClip = playCounter == 0 ? "uhmwpe_1.wav" : playCounter == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
                     }
@@ -1072,11 +1030,11 @@ namespace RealismMod
             else if (mat == EArmorMaterial.Ceramic)
             {
                 string audioClip = "ceramic_1.wav";
-                if (dist >= 40) 
+                if (dist >= 40)
                 {
                     audioClip = playCounter == 0 ? "ceramic_dist_1.wav" : playCounter == 1 ? "ceramic_dist_2.wav" : "ceramic_dist_3.wav";
                 }
-                else 
+                else
                 {
                     audioClip = playCounter == 0 ? "ceramic_1.wav" : playCounter == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
                 }
@@ -1122,9 +1080,9 @@ namespace RealismMod
                 {
                     audioClip = playCounter == 0 ? "glass_1.wav" : playCounter == 1 ? "glass_2.wav" : "glass_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist: volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
             }
-            else 
+            else
             {
                 string audioClip = "impact_1.wav";
                 if (dist >= 40)
@@ -1155,12 +1113,11 @@ namespace RealismMod
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
 
-            if (Plugin.EnableArmorHitZones && (isPlayer && Plugin.EnablePlayerArmorZones || !isPlayer)) 
+            if (Plugin.EnableArmorHitZones && ((isPlayer && Plugin.EnablePlayerArmorZones) || !isPlayer))
             {
                 RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2624), "raycastHit_0").GetValue(shot);
                 Collider col = raycast.collider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
-/*                Vector3 normalizedPoint = localPoint.normalized;*/
                 Vector3 hitNormal = raycast.normal;
                 string hitPart = shot.HittedBallisticCollider.name;
 
@@ -1171,17 +1128,10 @@ namespace RealismMod
                     hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
                 }
 
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm) 
+                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
                 {
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
-
-                if (__instance?.Item?.Owner?.ID != null && (__instance.Item.Owner.ID.StartsWith("pmc")) && !Plugin.EnablePlayerArmorZones)
-                {
-                    hasBypassedArmor = false;
-                    hitSecondaryArmor = false;
-                }
-
 
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
@@ -1200,7 +1150,7 @@ namespace RealismMod
                 {
                     return false;
                 }
-                else 
+                else
                 {
                     playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
                     playCounter++;
@@ -1209,7 +1159,7 @@ namespace RealismMod
             }
 
             float penetrationPower = shot.PenetrationPower;
-            float armorDuraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
+            float armorDuraPercent = __instance.Repairable.Durability / __instance.Repairable.TemplateDurability * 100f;
 
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
             {
@@ -1219,12 +1169,12 @@ namespace RealismMod
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.8f);
             }
-            else 
+            else
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.15f);
             }
 
-            float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
+            float armorResist = Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             armorResist = hitSecondaryArmor == true ? Math.Min(armorResist, 50f) : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
@@ -1254,7 +1204,6 @@ namespace RealismMod
 
     public class ApplyDamagePatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
@@ -1299,12 +1248,13 @@ namespace RealismMod
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
 
-            if (Plugin.EnableArmorHitZones) 
+            bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
+
+            if (Plugin.EnableArmorHitZones && ((isPlayer && Plugin.EnablePlayerArmorZones) || !isPlayer)) 
             {
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 Collider col = damageInfo.HitCollider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-      /*          Vector3 normalizedPoint = localPoint.normalized;*/
                 Vector3 hitNormal = damageInfo.HitNormal;
 
                 bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
@@ -1322,7 +1272,7 @@ namespace RealismMod
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
-                if (damageInfo.DeflectedBy == __instance.Item.Id) 
+                if (damageInfo.DeflectedBy == __instance.Item.Id)
                 {
                     playRicochetSound(col.transform.position);
                     playCounter++;
@@ -1348,7 +1298,7 @@ namespace RealismMod
             float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
             float armorDamageActual = ammo.ArmorDamage * speedFactor;
 
-            if (hasBypassedArmor) 
+            if (hasBypassedArmor)
             {
                 __result = 0f;
                 return false;
@@ -1358,13 +1308,12 @@ namespace RealismMod
             float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000;
             float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
-            float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
-            float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
+            float duraPercent = __instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
+            float armorResist = Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             armorResist = hitSecondaryArmor == true ? 50f : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
-  /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
             float maxPotentialDuraDamage = KE / penDuraFactoredClass;
@@ -1391,7 +1340,6 @@ namespace RealismMod
                 armorDestructibility = 0.1f;
             }
 
-
             float durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
 
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
@@ -1400,18 +1348,18 @@ namespace RealismMod
                 damageInfo.Damage *= armorStatReductionFactor;
                 damageInfo.PenetrationPower *= armorStatReductionFactor;
             }
-            else if(!hasBypassedArmor)
+            else if (!hasBypassedArmor)
             {
                 damageInfo.Damage = throughputFactoredDamage;
                 damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
             }
 
-            if ((damageInfo.BlockedBy == __instance.Item.Id || damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor) 
+            if ((damageInfo.BlockedBy == __instance.Item.Id || damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
             {
-                damageInfo.HeavyBleedingDelta =  0f;
+                damageInfo.HeavyBleedingDelta = 0f;
                 damageInfo.LightBleedingDelta = 0f;
             }
-            
+
             durabilityLoss = Math.Max(durabilityLoss, 0.05f);
             __instance.ApplyDurabilityDamage(durabilityLoss);
             __result = durabilityLoss;
@@ -1435,7 +1383,6 @@ namespace RealismMod
             }
             return false;
         }
-
     }
 
     public class CreateShotPatch : ModulePatch
@@ -1450,19 +1397,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2624 __result, float speedFactor, int fragmentIndex = 0)
         {
-            
-   /*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
-            Logger.LogWarning("========================STARTING BULLET VALUES============================");
-            Logger.LogWarning("Round ID = " + ammo.TemplateId);
-            Logger.LogWarning("Round Damage = " + ammo.Damage);
-            Logger.LogWarning("Round Penetration Power = " + ammo.PenetrationPower);
-            Logger.LogWarning("Round Penetration Chance = " + ammo.PenetrationChance);
-            Logger.LogWarning("Round Frag Chance = " + ammo.FragmentationChance);
-            Logger.LogWarning("Round Intial Speed = " + ammo.InitialSpeed);
-            Logger.LogWarning("Round SPEED FACTOR = " + speedFactor);
-            Logger.LogWarning("Round BC = " + ammo.BallisticCoeficient);
-            Logger.LogWarning("==============================================================");*/
-
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
             float penChanceFactored = ammo.PenetrationChance * speedFactor;
@@ -1471,19 +1405,8 @@ namespace RealismMod
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
 
-/*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
-            Logger.LogWarning("Round ID = " + ammo.TemplateId);
-            Logger.LogWarning("Round Damage = " + damageFactored);
-            Logger.LogWarning("Round Penetration Power = " + penPowerFactored);
-            Logger.LogWarning("Round Penetration Chance = " + penChanceFactored);
-            Logger.LogWarning("Round Frag Chance = " + fragchanceFactored);
-            Logger.LogWarning("Round Factored Speed = " + velocityFactored);
-            Logger.LogWarning("Round Factored BC = " + bcFactored);
-            Logger.LogWarning("==============================================================");*/
-
             __result = GClass2624.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
-
         }
     }
 
@@ -1508,13 +1431,13 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = -Mathf.Max(1f, KE / 1000f);
+                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {
                 force = 150f;
             }
-            else 
+            else
             {
                 force = 5f;
             }
@@ -1545,5 +1468,4 @@ namespace RealismMod
             return true;
         }
     }
-    
 }
